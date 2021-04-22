@@ -20,13 +20,12 @@ public class Spawner {
     public static Seq<Spawner> spawners = new Seq<>();
     public float drawx, drawy;
     public CoreBlock.CoreBuild nearestCore;
+    public boolean spawned = false, enabled = true;
+    public float spawnTime, spawnInterval;
     Item item;
     int x, y;
-    int spawnTime;
     int max;
-    Interval interval;
     Seq<ItemType> items;
-    boolean enabled = true;
 
     public Spawner(Item item, int x, int y, int spawnTime) {
         this.item = item;
@@ -34,16 +33,17 @@ public class Spawner {
         this.y = y;
         this.drawx = x * Vars.tilesize;
         this.drawy = y * Vars.tilesize;
-        this.interval = new Interval(1);
+        this.spawnInterval = spawnTime;
         this.items = new Seq<>();
         this.spawnTime = spawnTime;
         this.max = getMax();
     }
 
     public void update(PlayerType player) {
-        if (interval.get(0, spawnTime) && enabled) {
-            if (items.size < max) {
+        if (spawnTime < 0 && enabled) {
+            if (!spawned && items.size < max) {
                 items.add(ItemType.create(item, drawx + Mathf.random(-16f, 16f), drawy + Mathf.random(-16f, 16f)));
+                spawned = true;
             }
             if (inRange(player.owner, 16)) {
                 for (ItemType item1 : items) {
@@ -53,7 +53,7 @@ public class Spawner {
                 items.clear();
             }
             for (ItemType item1 : items) {
-                Call.label(Icon.get(item1.item), spawnTime / 60f, item1.getX(), item1.getY());
+                Call.label(Icon.get(item1.item), spawnInterval / 60f, item1.getX(), item1.getY());
             }
         }
         if (nearestCore != null) {

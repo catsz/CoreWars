@@ -41,7 +41,7 @@ public class MainX extends Plugin {
             if (block == Blocks.copperWallLarge || block == Blocks.plastaniumWallLarge || block == Blocks.thoriumWallLarge) continue;
             rules.bannedBlocks.add(block);
         }
-        rules.pvp = false;
+        rules.pvp = true;
         rules.canGameOver = false;
         rules.waveTimer = false;
         rules.buildSpeedMultiplier = 0.5f;

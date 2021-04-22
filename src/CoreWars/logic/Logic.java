@@ -11,12 +11,14 @@ import arc.graphics.Color;
 import arc.struct.Seq;
 import arc.util.Interval;
 import arc.util.Log;
+import arc.util.Time;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
+import mindustry.core.GameState;
 import mindustry.game.EventType;
 import mindustry.game.EventType.BlockBuildBeginEvent;
 import mindustry.game.Team;
@@ -31,7 +33,9 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 public class Logic {
 
-    public int updateTime = 60;
+    public float updateTime = 60;
+    public float shopInterval = 60 * 2f;
+    public float shopTime = shopInterval;
     int currentTeam = 10;
     boolean loaded = false;
     Interval interval;
@@ -136,6 +140,9 @@ public class Logic {
     }
 
     public void update() {
+        if (Vars.state.serverPaused) return;
+        shopTime -= Time.delta;
+        Spawner.spawners.forEach(s -> s.spawnTime -= Time.delta);
         for (PlayerType player : PlayerType.players) {
             // --- Non Air Check ---
             if (player.owner.unit() != null) {
@@ -182,7 +189,7 @@ public class Logic {
             float sx = player.owner.mouseX(),
                     sy = player.owner.mouseY();
             // --- Shop ---
-            if (interval.get(0, updateTime)) {
+            if (shopTime < 0) {
                 for (Shop shop : Shop.shops) {
                     // shop x, y
                     if (player.owner.dst(shop.getX() * Vars.tilesize, shop.getY() * Vars.tilesize) > 160) {
@@ -197,7 +204,7 @@ public class Logic {
                         Call.effect(player.owner.con, Fx.heal, rs, shy, 0, Color.clear);
                         player.nextPage();
                     }
-                    Call.label(player.owner.con, ">", 1f, rs, shy);
+                    Call.label(player.owner.con, ">", shopInterval / 60f, rs, shy);
 
                     // left switch
                     float ls = shx - Vars.tilesize * 2;
@@ -205,15 +212,15 @@ public class Logic {
                         Call.effect(player.owner.con, Fx.heal, ls, shy, 0, Color.clear);
                         player.prevPage();
                     }
-                    Call.label(player.owner.con, "<", 1f, ls, shy);
-                    Call.label(player.owner.con, player.catalog.name(), 1f, shx, shy);
+                    Call.label(player.owner.con, "<", shopInterval / 60f, ls, shy);
+                    Call.label(player.owner.con, player.catalog.name(), shopInterval / 60f, shx, shy);
 
                     // Items Logic
                     for (int i = 0; i < shop.get(player.catalog).items.size; i++) {
                         Catalog.Xitem item = shop.get(player.catalog).items.get(i);
                         float ty = shy + ((-2 - i * 2) * Vars.tilesize);
 
-                        Call.label(player.owner.con, item.gen(), 1f, shx, ty);
+                        Call.label(player.owner.con, item.gen(), shopInterval / 60f, shx, ty);
                         if (sx >= shx && sx <= shx + 8 && sy >= ty && sy <= ty) {
                             if (item.canBuy(player)) {
                                 item.onBuy(player);
@@ -232,12 +239,14 @@ public class Logic {
             // --- Player HUD ---
             StringBuilder hud = new StringBuilder();
 
-            hud.append("\n").append("[#").append(player.owner.team().color.toString()).append("]Team#").append(player.owner.team().id);
+            hud.append("[#").append(player.owner.team().color.toString()).append("]Team#").append(player.owner.team().id).append("\n");
             hud.append(player.generateResources());
             Call.setHudText(player.owner.con, hud.toString());
             // --- End Game ---
             for (CoreBlock.CoreBuild core : cores) {
-                if (core.tile.build == null) cores.remove(core);
+                if (core.tile.build == null) {
+                    cores.remove(core);
+                }
             }
             if (cores.size <= 1 && loaded) {
                 if (cores.size > 0) {
@@ -251,6 +260,17 @@ public class Logic {
                     loaded = false;
                 }
             }
+        }
+        // --- Fix Interval'nt ---
+        // because Anuke interval suck
+        Spawner.spawners.forEach(s -> {
+            if (s.spawnTime < 0) {
+                s.spawnTime = s.spawnInterval;
+            }
+            s.spawned = false;
+        });
+        if (shopTime < 0) {
+            shopTime = shopInterval;
         }
     }
 
