@@ -1,10 +1,10 @@
-package BedWars.logic;
+package CoreWars.logic;
 
-import BedWars.game.Catalog;
-import BedWars.game.Shop;
-import BedWars.game.Spawner;
-import BedWars.type.PlayerType;
-import BedWars.type.UnitData;
+import CoreWars.game.Catalog;
+import CoreWars.game.Shop;
+import CoreWars.game.Spawner;
+import CoreWars.type.PlayerType;
+import CoreWars.type.UnitData;
 import arc.Events;
 import arc.graphics.Color;
 import arc.struct.Seq;
@@ -56,6 +56,7 @@ public class Logic {
             update();
         });
     }
+    
     public void onBlockDestory(EventType.BlockDestroyEvent event) {
         if (cores.contains(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y))) {
             Log.info(event.tile.x + " : " + event.tile.y);

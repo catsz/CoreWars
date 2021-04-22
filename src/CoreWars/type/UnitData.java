@@ -1,4 +1,4 @@
-package BedWars.type;
+package CoreWars.type;
 
 import arc.Events;
 import arc.math.Angles;
@@ -34,7 +34,9 @@ public class UnitData {
 
         Events.on(EventType.UnitDestroyEvent.class, event -> {
             if (event.unit.isPlayer()) {
-                PlayerType.get(event.unit.getPlayer()).resources.inventory.clear();
+                if (PlayerType.get(event.unit.getPlayer()).aviableToRemove) {
+                    PlayerType.get(event.unit.getPlayer()).resources.inventory.clear();
+                }
             }
             if (data.containsKey(event.unit.id)) {
                 data.remove(event.unit.id);

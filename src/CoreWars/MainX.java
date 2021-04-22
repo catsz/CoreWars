@@ -1,9 +1,9 @@
-package BedWars;
+package CoreWars;
 
-import BedWars.logic.Icon;
-import BedWars.logic.Logic;
-import BedWars.type.PlayerType;
-import BedWars.type.UnitData;
+import CoreWars.logic.Icon;
+import CoreWars.logic.Logic;
+import CoreWars.type.PlayerType;
+import CoreWars.type.UnitData;
 import arc.Events;
 import arc.struct.Seq;
 import mindustry.Vars;

@@ -1,8 +1,8 @@
-package BedWars.game;
+package CoreWars.game;
 
-import BedWars.func.Command;
-import BedWars.logic.Icon;
-import BedWars.type.PlayerType;
+import CoreWars.func.Command;
+import CoreWars.logic.Icon;
+import CoreWars.type.PlayerType;
 import arc.struct.Seq;
 import mindustry.type.ItemStack;
 

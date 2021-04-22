@@ -1,4 +1,4 @@
-package BedWars.type;
+package CoreWars.type;
 
 import arc.struct.IntMap;
 import mindustry.type.Item;
