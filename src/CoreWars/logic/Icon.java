@@ -1,4 +1,4 @@
-package BedWars.logic;
+package CoreWars.logic;
 
 import arc.Core;
 import arc.struct.ObjectMap;

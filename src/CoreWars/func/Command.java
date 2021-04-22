@@ -1,6 +1,6 @@
-package BedWars.func;
+package CoreWars.func;
 
-import BedWars.type.PlayerType;
+import CoreWars.type.PlayerType;
 
 public interface Command {
     void run(PlayerType player);

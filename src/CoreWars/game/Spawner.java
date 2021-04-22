@@ -1,8 +1,8 @@
-package BedWars.game;
+package CoreWars.game;
 
-import BedWars.logic.Icon;
-import BedWars.type.ItemType;
-import BedWars.type.PlayerType;
+import CoreWars.logic.Icon;
+import CoreWars.type.ItemType;
+import CoreWars.type.PlayerType;
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Interval;

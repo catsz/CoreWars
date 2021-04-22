@@ -1,4 +1,4 @@
-package BedWars.type;
+package CoreWars.type;
 
 import mindustry.type.Item;
 

@@ -1,7 +1,7 @@
-package BedWars.type;
+package CoreWars.type;
 
-import BedWars.game.Catalog;
-import BedWars.logic.Icon;
+import CoreWars.game.Catalog;
+import CoreWars.logic.Icon;
 import arc.Events;
 import arc.struct.Seq;
 import arc.util.Log;
@@ -17,6 +17,7 @@ public class PlayerType {
     public Player owner;
     public Resources resources;
     public Catalog.Type catalog = Catalog.Type.armor;
+    public boolean aviableToRemove = true;
 
     public static void init() {
         Events.on(EventType.PlayerConnect.class, event -> {

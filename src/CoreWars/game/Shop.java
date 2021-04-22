@@ -1,4 +1,4 @@
-package BedWars.game;
+package CoreWars.game;
 
 import arc.struct.Seq;
 import java.awt.Point;
