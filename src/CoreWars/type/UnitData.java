@@ -4,6 +4,8 @@ import arc.Events;
 import arc.math.Angles;
 import arc.struct.IntMap;
 import arc.struct.Seq;
+import arc.util.Log;
+import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.content.UnitTypes;
 import mindustry.entities.bullet.BulletType;
@@ -36,6 +38,7 @@ public class UnitData {
             if (event.unit.isPlayer()) {
                 if (PlayerType.get(event.unit.getPlayer()).aviableToRemove) {
                     PlayerType.get(event.unit.getPlayer()).resources.inventory.clear();
+                    PlayerType.get(event.unit.getPlayer()).aviableToRemove = false;
                 }
             }
             if (data.containsKey(event.unit.id)) {

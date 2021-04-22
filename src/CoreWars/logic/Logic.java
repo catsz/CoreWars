@@ -140,6 +140,7 @@ public class Logic {
                 if (tile != null) {
                     if (tile.build == null && tile.floor().isLiquid) {
                         if (player.resources.get(Items.graphite) <= 0) {
+                            player.aviableToRemove = true;
                             player.owner.unit().kill();
                         } else {
                             player.resources.add(Items.graphite, -1);
@@ -150,7 +151,6 @@ public class Logic {
                     }
                 }
             }
-
             if (player.owner.unit() == null || player.owner.unit().spawnedByCore) {
                 if (player.owner.team().core() != null) {
                     CoreBlock.CoreBuild c = player.owner.team().core();
@@ -158,6 +158,22 @@ public class Logic {
                     unit.health = UnitTypes.dagger.health;
                     player.owner.unit(unit);
                 }
+            }
+            // --- TeleportUnitFix ---
+            if (player.oldUnit != player.owner.unit() && player.owner.core() != null) {
+                Log.info(player.owner.dst(player.oldUnit));
+                if (player.owner.dst(player.pos) > Vars.tilesize * 15) {
+                    player.resources.clear();
+                    player.aviableToRemove = false;
+                }
+            } else {
+                player.pos = player.owner.unit();
+            }
+            player.oldUnit = player.owner.unit();
+            // --- ShieldLogic ---
+            if (player.owner.unit().shield != player.oldShieldValue) {
+                player.oldShieldValue = player.owner.unit().shield();
+                Call.effect(Fx.shieldApply, player.owner.x, player.owner.y, player.owner.y, Color.clear);
             }
 
             // --- Shoot Coordinate ---
@@ -167,6 +183,9 @@ public class Logic {
             if (interval.get(0, updateTime)) {
                 for (Shop shop : Shop.shops) {
                     // shop x, y
+                    if (player.owner.dst(shop.getX() * Vars.tilesize, shop.getY() * Vars.tilesize) > 160) {
+                        continue;
+                    }
                     float shx = shop.getX() * Vars.tilesize,
                             shy = shop.getY() * Vars.tilesize;
 
@@ -202,7 +221,6 @@ public class Logic {
                     }
                 }
             }
-
             // --- UnitData ---
             UnitData.data.forEach(e -> e.value.update());
 

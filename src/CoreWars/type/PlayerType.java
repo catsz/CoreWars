@@ -5,7 +5,10 @@ import CoreWars.logic.Icon;
 import arc.Events;
 import arc.struct.Seq;
 import mindustry.game.EventType;
+import mindustry.gen.Nulls;
 import mindustry.gen.Player;
+import mindustry.gen.Posc;
+import mindustry.gen.Unit;
 import mindustry.type.ItemStack;
 
 public class PlayerType {
@@ -15,7 +18,10 @@ public class PlayerType {
     public Player owner;
     public Resources resources;
     public Catalog.Type catalog = Catalog.Type.armor;
-    public boolean aviableToRemove = true;
+    public Unit oldUnit = Nulls.unit;
+    public Posc pos;
+    public float oldShieldValue = 0;
+    public boolean aviableToRemove = false;
 
     public static void init() {
         Events.on(EventType.PlayerConnect.class, event -> {

@@ -30,4 +30,8 @@ public class Resources {
         }
         return 0;
     }
+    
+    public void clear() {
+        inventory.clear();
+    }
 }

@@ -7,6 +7,8 @@ import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Interval;
 import mindustry.Vars;
+import mindustry.content.Blocks;
+import mindustry.content.Items;
 import mindustry.gen.Call;
 import mindustry.gen.Posc;
 import mindustry.gen.Unit;
@@ -21,6 +23,7 @@ public class Spawner {
     Item item;
     int x, y;
     int spawnTime;
+    int max;
     Interval interval;
     Seq<ItemType> items;
     boolean enabled = true;
@@ -34,14 +37,18 @@ public class Spawner {
         this.interval = new Interval(1);
         this.items = new Seq<>();
         this.spawnTime = spawnTime;
+        this.max = getMax();
     }
 
     public void update(PlayerType player) {
         if (interval.get(0, spawnTime) && enabled) {
-            if (items.size < 10) {
+            if (items.size < max) {
                 items.add(ItemType.create(item, drawx + Mathf.random(-16f, 16f), drawy + Mathf.random(-16f, 16f)));
             }
             if (inRange(player.owner, 16)) {
+                for (ItemType item1 : items) {
+                    Call.transferItemEffect(item, drawx, drawy, player.owner.unit());
+                }
                 player.resources.add(item, items.size);
                 items.clear();
             }
@@ -60,16 +67,28 @@ public class Spawner {
 
     public void remove() {
         Spawner.spawners.remove(this);
+        if (Vars.world.tile(x, y) != null) {
+            Vars.world.tile(x, y).setNet(Blocks.plastaniumWall);
+        }
         for (Unit unit : nearestCore.team.data().units) {
             unit.kill();
         }
     }
-    
+
     public boolean inRange(Posc pos, float dst) {
         return pos.dst(drawx, drawy) <= dst;
     }
 
     public boolean inRange(float x, float y, float dst) {
         return Mathf.dst(drawx, drawy, x, y) <= dst;
+    }
+    
+    public int getMax() {
+        if (item == Items.copper) {
+            return 20;
+        } else if(item == Items.thorium) {
+            return 15;
+        }
+        return 10;
     }
 }
