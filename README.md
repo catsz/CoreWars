@@ -1,1 +1,1 @@
-# CoreWara
+# CoreWars
