@@ -49,19 +49,19 @@ public class MainX extends Plugin {
         rules.waveTimer = false;
         rules.buildSpeedMultiplier = 0.5f;
 
+        Blocks.plastaniumWall.health = 999999;
+        Blocks.plastaniumConveyor.health = 999999;
+        Blocks.conveyor.buildCostMultiplier = 10f;
+        UnitTypes.poly.health = 999999f;
+        UnitTypes.poly.speed = 0;
+        UnitTypes.poly.defaultController = UnitTypes.mega.defaultController;
+        UnitTypes.poly.weapons.clear();
         Events.on(EventType.ServerLoadEvent.class, event -> {
             load();
             Vars.netServer.openServer();
         });
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
-            Blocks.plastaniumWall.health = 999999;
-            Blocks.plastaniumConveyor.health = 999999;
-            Blocks.conveyor.buildCostMultiplier = 10f;
-            UnitTypes.poly.health = 999999f;
-            UnitTypes.poly.speed = 0;
-            UnitTypes.poly.defaultController = UnitTypes.mega.defaultController;
-            UnitTypes.poly.weapons.clear();
             Vars.state.rules = rules.copy();
         });
     }

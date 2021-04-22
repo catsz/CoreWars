@@ -52,8 +52,10 @@ public class Spawner {
                 player.resources.add(item, items.size);
                 items.clear();
             }
-            for (ItemType item1 : items) {
-                Call.label(Icon.get(item1.item), spawnInterval / 60f, item1.getX(), item1.getY());
+            if (inRange(player.owner, 120)) {
+                for (ItemType item1 : items) {
+                    Call.label(Icon.get(item1.item), spawnInterval / 60f, item1.getX(), item1.getY());
+                }
             }
         }
         if (nearestCore != null) {
@@ -71,6 +73,9 @@ public class Spawner {
             Vars.world.tile(x, y).setNet(Blocks.plastaniumWall);
         }
         for (Unit unit : nearestCore.team.data().units) {
+            if (unit.isPlayer()) {
+                Vars.netServer.assignTeam(unit.getPlayer());
+            }
             unit.kill();
         }
     }
@@ -82,11 +87,11 @@ public class Spawner {
     public boolean inRange(float x, float y, float dst) {
         return Mathf.dst(drawx, drawy, x, y) <= dst;
     }
-    
+
     public int getMax() {
         if (item == Items.copper) {
             return 20;
-        } else if(item == Items.thorium) {
+        } else if (item == Items.thorium) {
             return 15;
         }
         return 10;

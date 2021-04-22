@@ -69,7 +69,7 @@ public class Logic {
             CoreBlock.CoreBuild core = cores.find(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y));
             core.team.data().units.forEach(u -> u.kill());
             core.kill();
-        }
+        };
     }
 
     public void onBlockBuildBegin(BlockBuildBeginEvent event) {
