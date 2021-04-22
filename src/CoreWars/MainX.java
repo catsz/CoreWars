@@ -6,6 +6,7 @@ import CoreWars.type.PlayerType;
 import CoreWars.type.UnitData;
 import arc.Events;
 import arc.struct.Seq;
+import arc.util.CommandHandler;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.UnitTypes;
@@ -75,4 +76,18 @@ public class MainX extends Plugin {
         }
         Vars.logic.play();
     }
+
+    @Override
+    public void registerClientCommands(CommandHandler handler) {
+        handler.<Player>register("info", "Info for CoreWars", (args, player) -> {
+            player.sendMessage("[white]Defend [accnet]core.\n" + 
+                    "[scarlet]Generators [white]generate resources, go near to pick up"
+            + "\n[accent]Shop [white]you can buy somthing from it '<' and '>' switch catalog"
+            + "\n[accent]BuildMaterial [white]automaticly place conveyor under you if you have it"
+                    +"\n[accent]Poly [white]just build walls, you can buy resources in shop"
+            + "\n[accent]Target [white]destroy all enemy cores");
+        });
+    }
+    
+    
 }

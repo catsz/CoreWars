@@ -186,8 +186,8 @@ public class Logic {
             }
 
             // --- Shoot Coordinate ---
-            float sx = player.owner.mouseX(),
-                    sy = player.owner.mouseY();
+            float sx = player.owner.unit().aimX,
+                    sy = player.owner.unit().aimY;
             // --- Shop ---
             if (shopTime < 0) {
                 for (Shop shop : Shop.shops) {
@@ -200,7 +200,7 @@ public class Logic {
 
                     // right switch
                     float rs = shx + Vars.tilesize * 2;
-                    if (sx >= rs && sx <= rs + 8 && sy >= shy && sy <= shy) {
+                    if (sx >= rs - 4 && sx <= rs + 12 && sy >= shy - 4 && sy <= shy + 12) {
                         Call.effect(player.owner.con, Fx.heal, rs, shy, 0, Color.clear);
                         player.nextPage();
                     }
@@ -208,7 +208,7 @@ public class Logic {
 
                     // left switch
                     float ls = shx - Vars.tilesize * 2;
-                    if (sx >= ls && sx <= ls + 8 && sy >= shy && sy <= shy) {
+                    if (sx >= ls - 4 && sx <= ls + 12 && sy >= shy - 4 && sy <= shy + 12) {
                         Call.effect(player.owner.con, Fx.heal, ls, shy, 0, Color.clear);
                         player.prevPage();
                     }
@@ -221,7 +221,7 @@ public class Logic {
                         float ty = shy + ((-2 - i * 2) * Vars.tilesize);
 
                         Call.label(player.owner.con, item.gen(), shopInterval / 60f, shx, ty);
-                        if (sx >= shx && sx <= shx + 8 && sy >= ty && sy <= ty) {
+                        if (sx >= shx - 4 && sx <= shx + 12 && sy >= ty - 4 && sy <= ty + 12) {
                             if (item.canBuy(player)) {
                                 item.onBuy(player);
                                 Call.effect(player.owner.con, Fx.heal, shx, ty, 0, Color.clear);
@@ -277,7 +277,7 @@ public class Logic {
     public void initCatalogs() {
         // #armor
         catalogs[0] = new Catalog(Catalog.Type.armor, new Catalog.Xitem[]{
-            new Catalog.Xitem("[gray]50[white] maxhealth ", (player) -> {
+            new Catalog.Xitem("[lime]50[white] shield ", (player) -> {
                 player.owner.unit().health = player.owner.unit().maxHealth * 1.2f;
                 player.owner.unit().shield = 50f;
             }, new ItemStack(Items.copper, 10)),
@@ -288,7 +288,7 @@ public class Logic {
             new Catalog.Xitem("[lime]350[white] shiled", (player) -> {
                 player.owner.unit().shield = 350f;
             }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 12)),
-            new Catalog.Xitem("[gray]1.7[white] maxhealth ", (player) -> {
+            new Catalog.Xitem("[red]1.7[white] maxhealth ", (player) -> {
                 player.owner.unit().maxHealth = player.owner.unit().type.health * 1.7f;
                 player.owner.unit().health = player.owner.unit().maxHealth;
             }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 5)),});
