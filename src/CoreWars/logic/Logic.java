@@ -1,5 +1,6 @@
 package CoreWars.logic;
 
+import CoreWars.MainX;
 import CoreWars.game.Catalog;
 import CoreWars.game.Shop;
 import CoreWars.game.Spawner;
@@ -10,12 +11,14 @@ import arc.graphics.Color;
 import arc.struct.Seq;
 import arc.util.Interval;
 import arc.util.Log;
+import arc.util.Time;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
+import mindustry.core.GameState;
 import mindustry.game.EventType;
 import mindustry.game.EventType.BlockBuildBeginEvent;
 import mindustry.game.Team;
@@ -30,9 +33,12 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 public class Logic {
 
+    public float updateTime = 60;
+    public float shopInterval = 60 * 2f;
+    public float shopTime = shopInterval;
     int currentTeam = 10;
+    boolean loaded = false;
     Interval interval;
-    public int updateTime = 60;
     Catalog[] catalogs;
     Seq<CoreBlock.CoreBuild> cores;
 
@@ -61,9 +67,9 @@ public class Logic {
         if (cores.contains(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y))) {
             Log.info(event.tile.x + " : " + event.tile.y);
             CoreBlock.CoreBuild core = cores.find(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y));
-            core.team.data().units.forEach(u-> u.kill());
+            core.team.data().units.forEach(u -> u.kill());
             core.kill();
-        }
+        };
     }
 
     public void onBlockBuildBegin(BlockBuildBeginEvent event) {
@@ -88,10 +94,10 @@ public class Logic {
 
         boolean firstCore = true;
         for (Tile tile : Vars.world.tiles) {
-            if (tile.overlay() instanceof OreBlock) {
+            if (tile.overlay() instanceof OreBlock) { // Remove all ores from map | fuck it xd
                 tile.setOverlay(Blocks.air);
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel6) {
+            if (tile.floor() == (Floor) Blocks.darkPanel6) { // Core Spawner
                 if (firstCore) {
                     tile.setNet(Blocks.coreShard, Team.sharded, 0);
                     firstCore = false;
@@ -101,22 +107,22 @@ public class Logic {
                 }
                 cores.add((CoreBlock.CoreBuild) tile.build);
             }
-            if (tile.floor() == (Floor) Blocks.metalFloor2) {
+            if (tile.floor() == (Floor) Blocks.metalFloor2) { // Shop Spawner
                 Shop shop = Shop.create(tile.x, tile.y);
                 shop.spawn();
                 shop.add(catalogs);
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel1) {
-                Spawner.spawners.add(new Spawner(Items.copper, tile.x, tile.y, (int) (60 * 2.5f)));
+            if (tile.floor() == (Floor) Blocks.darkPanel1) { // Copper Generator
+                Spawner.spawners.add(new Spawner(Items.copper, tile.x, tile.y, (int) (60 * 2f)));
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel5) {
+            if (tile.floor() == (Floor) Blocks.darkPanel5) { // Thorium Generator
                 Spawner.spawners.add(new Spawner(Items.thorium, tile.x, tile.y, 60 * 5));
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel4) {
+            if (tile.floor() == (Floor) Blocks.darkPanel4) { // Plastinium Generator
                 Spawner.spawners.add(new Spawner(Items.plastanium, tile.x, tile.y, 60 * 10));
             }
         }
-        for (Spawner spawner : Spawner.spawners) {
+        for (Spawner spawner : Spawner.spawners) { // set nearest core for spawners | to disable and remove when core die
             CoreBlock.CoreBuild nearest = cores.get(0);
             for (CoreBlock.CoreBuild core : cores) {
                 if (core.dst(spawner.drawx, spawner.drawy) < nearest.dst(spawner.drawx, spawner.drawy)) {
@@ -125,23 +131,30 @@ public class Logic {
             }
             spawner.nearestCore = nearest;
         }
-        Timer.schedule(() -> {
+        Timer.schedule(() -> { // spawn core builders | haha poly go brrrrr
             for (CoreBlock.CoreBuild core : cores) {
                 UnitTypes.poly.spawn(core.team, core.x, core.y);
             }
+            loaded = true;
         }, 3);
     }
 
     public void update() {
-        for (PlayerType player : PlayerType.players.values()) {
+        if (Vars.state.serverPaused) {
+            return;
+        }
+        shopTime -= Time.delta;
+        Spawner.spawners.forEach(s -> s.spawnTime -= Time.delta);
+        for (PlayerType player : PlayerType.players) {
             // --- Non Air Check ---
             if (player.owner.unit() != null) {
                 Tile tile = player.owner.unit().tileOn();
                 if (tile != null) {
                     if (tile.build == null && tile.floor().isLiquid) {
                         if (player.resources.get(Items.graphite) <= 0) {
+                            player.aviableToRemove = true;
                             player.owner.unit().kill();
-                        } else {
+                        } else { // if build resouce < 1 plauyer can't build conveyor => die
                             player.resources.add(Items.graphite, -1);
                             if (player.owner.unit() != null) {
                                 tile.setNet(Blocks.conveyor, player.owner.team(), (int) (player.owner.unit().rotation / 90f));
@@ -150,8 +163,7 @@ public class Logic {
                     }
                 }
             }
-
-            if (player.owner.unit() == null || player.owner.unit().spawnedByCore) {
+            if (player.owner.unit() == null || player.owner.unit().spawnedByCore) { // Spawn dagger when play try to spawn in core bruh
                 if (player.owner.team().core() != null) {
                     CoreBlock.CoreBuild c = player.owner.team().core();
                     Unit unit = UnitTypes.dagger.spawn(c.team, c.x, c.y + Vars.tilesize * 5);
@@ -159,41 +171,59 @@ public class Logic {
                     player.owner.unit(unit);
                 }
             }
+            // --- TeleportUnitFix ---
+            if (player.oldUnit != player.owner.unit() && player.owner.core() != null) { // that need when player select poly like a main unit, because oldUnit have NullController
+                if (player.owner.dst(player.pos) > Vars.tilesize * 15) {
+                    player.resources.clear();
+                    player.aviableToRemove = false;
+                }
+            } else {
+                player.pos = player.owner.unit();
+            }
+            player.oldUnit = player.owner.unit();
+            // --- ShieldLogic ---
+            if (player.owner.unit().shield != player.oldShieldValue) { // Some Color Stuff :P
+                player.oldShieldValue = player.owner.unit().shield();
+                Call.effect(Fx.shieldApply, player.owner.x, player.owner.y, player.owner.y, Color.clear);
+            }
 
             // --- Shoot Coordinate ---
-            float sx = player.owner.mouseX(),
-                    sy = player.owner.mouseY();
+            float sx = player.owner.unit().aimX,
+                    sy = player.owner.unit().aimY;
             // --- Shop ---
-            if (interval.get(0, updateTime)) {
+            if (shopTime < 0) {
                 for (Shop shop : Shop.shops) {
                     // shop x, y
+                    if (player.owner.dst(shop.getX() * Vars.tilesize, shop.getY() * Vars.tilesize) > 160) {
+                        continue;
+                    }
                     float shx = shop.getX() * Vars.tilesize,
                             shy = shop.getY() * Vars.tilesize;
 
                     // right switch
                     float rs = shx + Vars.tilesize * 2;
-                    if (sx >= rs && sx <= rs + 8 && sy >= shy && sy <= shy) {
+                    if (sx >= rs - 4 && sx <= rs + 12 && sy >= shy - 4 && sy <= shy + 12) {
                         Call.effect(player.owner.con, Fx.heal, rs, shy, 0, Color.clear);
                         player.nextPage();
                     }
-                    Call.label(player.owner.con, ">", 1f, rs, shy);
+                    Call.label(player.owner.con, ">", shopInterval / 60f, rs, shy);
 
                     // left switch
                     float ls = shx - Vars.tilesize * 2;
-                    if (sx >= ls && sx <= ls + 8 && sy >= shy && sy <= shy) {
+                    if (sx >= ls - 4 && sx <= ls + 12 && sy >= shy - 4 && sy <= shy + 12) {
                         Call.effect(player.owner.con, Fx.heal, ls, shy, 0, Color.clear);
                         player.prevPage();
                     }
-                    Call.label(player.owner.con, "<", 1f, ls, shy);
-                    Call.label(player.owner.con, player.catalog.name(), 1f, shx, shy);
+                    Call.label(player.owner.con, "<", shopInterval / 60f, ls, shy);
+                    Call.label(player.owner.con, player.catalog.name(), shopInterval / 60f, shx, shy);
 
                     // Items Logic
                     for (int i = 0; i < shop.get(player.catalog).items.size; i++) {
                         Catalog.Xitem item = shop.get(player.catalog).items.get(i);
                         float ty = shy + ((-2 - i * 2) * Vars.tilesize);
 
-                        Call.label(player.owner.con, item.gen(), 1f, shx, ty);
-                        if (sx >= shx && sx <= shx + 8 && sy >= ty && sy <= ty) {
+                        Call.label(player.owner.con, item.gen(), shopInterval / 60f, shx, ty);
+                        if (sx >= shx - 4 && sx <= shx + 12 && sy >= ty - 4 && sy <= ty + 12) {
                             if (item.canBuy(player)) {
                                 item.onBuy(player);
                                 Call.effect(player.owner.con, Fx.heal, shx, ty, 0, Color.clear);
@@ -202,9 +232,14 @@ public class Logic {
                     }
                 }
             }
-
             // --- UnitData ---
-            UnitData.data.forEach(e -> e.value.update());
+            UnitData.data.forEach(e -> {
+                if (e != null) {
+                    if (e.value != null) {
+                        e.value.update();
+                    }
+                }
+            });
 
             // --- Spawner ---
             Spawner.spawners.forEach(s -> s.update(player));
@@ -212,21 +247,59 @@ public class Logic {
             // --- Player HUD ---
             StringBuilder hud = new StringBuilder();
 
+            hud.append("[#").append(player.owner.team().color.toString()).append("]Team#").append(player.owner.team().id).append("\n");
             hud.append(player.generateResources());
             Call.setHudText(player.owner.con, hud.toString());
+            // --- End Game ---
+            for (CoreBlock.CoreBuild core : cores) {
+                if (core.tile.build == null) {
+                    cores.remove(core);
+                }
+            }
+            if (cores.size <= 1 && loaded) {
+                if (cores.size > 0) {
+                    CoreBlock.CoreBuild c = cores.get(0);
+                    Call.infoMessage("[#" + c.team.color.toString() + "]Team#" + c.team.id + " [accent]is Winner");
+                    Timer.schedule(() -> MainX.load(), 3);
+                    loaded = false;
+                } else {
+                    Call.infoMessage("[gray]Draw");
+                    Timer.schedule(() -> MainX.load(), 3);
+                    loaded = false;
+                }
+            }
+        }
+        // --- Fix Interval'nt ---
+        // because Anuke interval suck
+        Spawner.spawners.forEach(s -> {
+            if (s.spawnTime < 0) {
+                s.spawnTime = s.spawnInterval;
+            }
+            s.spawned = false;
+        });
+        if (shopTime < 0) {
+            shopTime = shopInterval;
         }
     }
 
     public void initCatalogs() {
         // #armor
         catalogs[0] = new Catalog(Catalog.Type.armor, new Catalog.Xitem[]{
-            new Catalog.Xitem("[gray]1.2[white] maxhealth ", (player) -> {
+            new Catalog.Xitem("[lime]50[white] shield ", (player) -> {
                 player.owner.unit().health = player.owner.unit().maxHealth * 1.2f;
-            }, new ItemStack(Items.copper, 15)),
-            new Catalog.Xitem("[gray]1.7[white] maxhealth ", (player) -> {
+                player.owner.unit().shield = 50f;
+            }, new ItemStack(Items.copper, 10)),
+            new Catalog.Xitem("[lime]150[white] shiled ", (player) -> {
                 player.owner.unit().health = player.owner.unit().maxHealth * 1.7f;
-            }, new ItemStack(Items.copper, 25), new ItemStack(Items.thorium, 12))
-        });
+                player.owner.unit().shield = 150f;
+            }, new ItemStack(Items.copper, 15), new ItemStack(Items.thorium, 7)),
+            new Catalog.Xitem("[lime]350[white] shiled", (player) -> {
+                player.owner.unit().shield = 350f;
+            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 12)),
+            new Catalog.Xitem("[red]1.7[white] maxhealth ", (player) -> {
+                player.owner.unit().maxHealth = player.owner.unit().type.health * 1.7f;
+                player.owner.unit().health = player.owner.unit().maxHealth;
+            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 5)),});
         // #defense
         catalogs[1] = new Catalog(Catalog.Type.defense, new Catalog.Xitem[]{
             new Catalog.Xitem("[#" + Items.graphite.color.toString() + "]Build Material[]", (player) -> {
@@ -260,15 +333,13 @@ public class Logic {
             new Catalog.Xitem("[gray]Knife []", (player) -> {
                 setWeaponForUnitData(player, UnitTypes.mace);
             }, new ItemStack(Items.thorium, 5), new ItemStack(Items.copper, 15)),
-        new Catalog.Xitem("[gray]Artilerry []", (player) -> {
-            setWeaponForUnitData(player, UnitTypes.fortress);
-        }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 10)),
-        new Catalog.Xitem("[gray]Laser[]", (player) -> {
-            setWeaponForUnitData(player, UnitTypes.quasar);
-        }, new ItemStack(Items.plastanium, 10)),
-    }
-
-);
+            new Catalog.Xitem("[gray]Laser []", (player) -> {
+                setWeaponForUnitData(player, UnitTypes.quasar);
+            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 10)),
+            new Catalog.Xitem("[gray]Artillery[]", (player) -> {
+                setWeaponForUnitData(player, UnitTypes.fortress);
+            }, new ItemStack(Items.plastanium, 10)),}
+        );
     }
 
     public void setWeaponForUnitData(PlayerType player, UnitType type) {

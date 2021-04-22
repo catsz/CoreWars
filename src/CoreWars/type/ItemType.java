@@ -1,10 +1,8 @@
 package CoreWars.type;
 
-import arc.math.geom.Position;
 import mindustry.type.Item;
 
-//why not implement position
-public class ItemType implements Position {
+public class ItemType {
     public Item item;
     float x, y;
     
@@ -18,13 +16,11 @@ public class ItemType implements Position {
     
     private ItemType() {
     }
-
-    @Override
+    
     public float getX() {
         return x;
     }
-
-    @Override
+    
     public float getY() {
         return y;
     }

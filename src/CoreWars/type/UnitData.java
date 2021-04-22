@@ -4,6 +4,8 @@ import arc.Events;
 import arc.math.Angles;
 import arc.struct.IntMap;
 import arc.struct.Seq;
+import arc.util.Log;
+import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.content.UnitTypes;
 import mindustry.entities.bullet.BulletType;
@@ -36,6 +38,7 @@ public class UnitData {
             if (event.unit.isPlayer()) {
                 if (PlayerType.get(event.unit.getPlayer()).aviableToRemove) {
                     PlayerType.get(event.unit.getPlayer()).resources.inventory.clear();
+                    PlayerType.get(event.unit.getPlayer()).aviableToRemove = false;
                 }
             }
             if (data.containsKey(event.unit.id)) {
@@ -74,9 +77,9 @@ public class UnitData {
             for (WeaponMount mount : mounts) {
                 if (mount.reload < 0) {
                     BulletType bt = mount.weapon.bullet;
-                    float x = unit.x + Angles.trnsx(unit.rotation, mount.weapon.x, mount.weapon.y),
-                            y = unit.y + Angles.trnsy(unit.rotation, mount.weapon.x, mount.weapon.y);
-                    mount.weapon.bullet.createNet(unit.team, x, y, unit.rotation, bt.damage, bt.ammoMultiplier / bt.speed, bt.lifetime);
+                    float x = unit.x + Angles.trnsx(unit.rotation - 90f, mount.weapon.x, mount.weapon.y),
+                            y = unit.y + Angles.trnsy(unit.rotation - 90f, mount.weapon.x, mount.weapon.y);
+                    mount.weapon.bullet.createNet(unit.team, x, y, unit.rotation, bt.damage, 1, bt.lifetime / bt.range() * bt.speed);
                     if (hasFire) {
                         Call.effect(Fx.fire, x, y, unit.rotation, mount.weapon.heatColor);
                     }
@@ -90,6 +93,10 @@ public class UnitData {
         // Only For This gamemode
         if (!unit.isPlayer() && unit.type != UnitTypes.poly) {
             unit.kill();
+        } else if (unit.type != null) {
+            if (unit.type == UnitTypes.poly && unit.core() != null) {
+                unit.set(unit.core().x, unit.core().y);
+            }
         }
     }
 

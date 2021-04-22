@@ -2,14 +2,13 @@ package CoreWars.type;
 
 import arc.struct.IntMap;
 import mindustry.type.Item;
-import mindustry.type.ItemSeq;
 import mindustry.type.ItemStack;
 
 public class Resources {
-    ItemSeq inventory;
+    IntMap<ItemStack> inventory;
 
     public Resources() {
-        inventory = new ItemSeq();
+        inventory = new IntMap<>();
     }
     /*
         copper - start material
@@ -18,10 +17,21 @@ public class Resources {
         graphite - build material | need to build plastinium conveyor
     */
     public void add(Item item, int amount) {
-        inventory.add(item, amount);
+        if (inventory.containsKey(item.id)) {
+            inventory.get(item.id).amount += amount;
+        } else {
+            inventory.put(item.id, new ItemStack(item, amount));
+        }
     }
     
     public int get(Item item) {
-        return inventory.get(item);
+        if (inventory.containsKey(item.id)) {
+            return inventory.get(item.id).amount;
+        }
+        return 0;
+    }
+    
+    public void clear() {
+        inventory.clear();
     }
 }
