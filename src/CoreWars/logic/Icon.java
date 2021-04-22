@@ -1,7 +1,6 @@
 package CoreWars.logic;
 
 import java.util.HashMap;
-
 import mindustry.content.Items;
 import mindustry.gen.Iconc;
 import mindustry.type.Item;
