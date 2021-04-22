@@ -6,7 +6,6 @@ import CoreWars.type.PlayerType;
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Interval;
-import arc.util.Log;
 import mindustry.Vars;
 import mindustry.gen.Call;
 import mindustry.gen.Posc;

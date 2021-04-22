@@ -45,9 +45,9 @@ public class Logic {
             onWorldLoad();
         });
         Events.on(EventType.BlockDestroyEvent.class, event -> {
-        
+
         });
-        
+
         Events.on(EventType.BlockBuildBeginEvent.class, event -> {
             onBlockBuildBegin(event);
         });
@@ -56,16 +56,16 @@ public class Logic {
             update();
         });
     }
-    
+
     public void onBlockDestory(EventType.BlockDestroyEvent event) {
         if (cores.contains(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y))) {
             Log.info(event.tile.x + " : " + event.tile.y);
             CoreBlock.CoreBuild core = cores.find(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y));
-            core.team.data().units.forEach(u-> u.kill());
+            core.team.data().units.forEach(u -> u.kill());
             core.kill();
         }
     }
-    
+
     public void onBlockBuildBegin(BlockBuildBeginEvent event) {
         if (event.tile.build != null) {
             if (event.tile.floor().isLiquid) {
@@ -220,13 +220,21 @@ public class Logic {
     public void initCatalogs() {
         // #armor
         catalogs[0] = new Catalog(Catalog.Type.armor, new Catalog.Xitem[]{
-            new Catalog.Xitem("[gray]1.2[white] maxhealth ", (player) -> {
+            new Catalog.Xitem("[gray]50[white] maxhealth ", (player) -> {
                 player.owner.unit().health = player.owner.unit().maxHealth * 1.2f;
-            }, new ItemStack(Items.copper, 15)),
-            new Catalog.Xitem("[gray]1.7[white] maxhealth ", (player) -> {
+                player.owner.unit().shield = 50f;
+            }, new ItemStack(Items.copper, 10)),
+            new Catalog.Xitem("[lime]150[white] shiled ", (player) -> {
                 player.owner.unit().health = player.owner.unit().maxHealth * 1.7f;
-            }, new ItemStack(Items.copper, 25), new ItemStack(Items.thorium, 12))
-        });
+                player.owner.unit().shield = 150f;
+            }, new ItemStack(Items.copper, 15), new ItemStack(Items.thorium, 7)),
+            new Catalog.Xitem("[lime]350[white] shiled", (player) -> {
+                player.owner.unit().shield = 350f;
+            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 12)),
+            new Catalog.Xitem("[gray]1.7[white] maxhealth ", (player) -> {
+                player.owner.unit().maxHealth = player.owner.unit().type.health * 1.7f;
+                player.owner.unit().health = player.owner.unit().maxHealth;
+            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 5)),});
         // #defense
         catalogs[1] = new Catalog(Catalog.Type.defense, new Catalog.Xitem[]{
             new Catalog.Xitem("[#" + Items.graphite.color.toString() + "]Build Material[]", (player) -> {
@@ -260,15 +268,13 @@ public class Logic {
             new Catalog.Xitem("[gray]Knife []", (player) -> {
                 setWeaponForUnitData(player, UnitTypes.mace);
             }, new ItemStack(Items.thorium, 5), new ItemStack(Items.copper, 15)),
-        new Catalog.Xitem("[gray]Artilerry []", (player) -> {
-            setWeaponForUnitData(player, UnitTypes.fortress);
-        }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 10)),
-        new Catalog.Xitem("[gray]Laser[]", (player) -> {
-            setWeaponForUnitData(player, UnitTypes.quasar);
-        }, new ItemStack(Items.plastanium, 10)),
-    }
-
-);
+            new Catalog.Xitem("[gray]Artilerry []", (player) -> {
+                setWeaponForUnitData(player, UnitTypes.fortress);
+            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 10)),
+            new Catalog.Xitem("[gray]Laser[]", (player) -> {
+                setWeaponForUnitData(player, UnitTypes.quasar);
+            }, new ItemStack(Items.plastanium, 10)),}
+        );
     }
 
     public void setWeaponForUnitData(PlayerType player, UnitType type) {
