@@ -140,7 +140,9 @@ public class Logic {
     }
 
     public void update() {
-        if (Vars.state.serverPaused) return;
+        if (Vars.state.serverPaused) {
+            return;
+        }
         shopTime -= Time.delta;
         Spawner.spawners.forEach(s -> s.spawnTime -= Time.delta);
         for (PlayerType player : PlayerType.players) {
@@ -231,7 +233,13 @@ public class Logic {
                 }
             }
             // --- UnitData ---
-            UnitData.data.forEach(e -> e.value.update());
+            UnitData.data.forEach(e -> {
+                if (e != null) {
+                    if (e.value != null) {
+                        e.value.update();
+                    }
+                }
+            });
 
             // --- Spawner ---
             Spawner.spawners.forEach(s -> s.update(player));
