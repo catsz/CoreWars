@@ -1,5 +1,6 @@
 package CoreWars.logic;
 
+import CoreWars.MainX;
 import CoreWars.game.Catalog;
 import CoreWars.game.Shop;
 import CoreWars.game.Spawner;
@@ -30,9 +31,10 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 public class Logic {
 
-    int currentTeam = 10;
-    Interval interval;
     public int updateTime = 60;
+    int currentTeam = 10;
+    boolean loaded = false;
+    Interval interval;
     Catalog[] catalogs;
     Seq<CoreBlock.CoreBuild> cores;
 
@@ -88,10 +90,10 @@ public class Logic {
 
         boolean firstCore = true;
         for (Tile tile : Vars.world.tiles) {
-            if (tile.overlay() instanceof OreBlock) {
+            if (tile.overlay() instanceof OreBlock) { // Remove all ores from map | fuck it xd
                 tile.setOverlay(Blocks.air);
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel6) {
+            if (tile.floor() == (Floor) Blocks.darkPanel6) { // Core Spawner
                 if (firstCore) {
                     tile.setNet(Blocks.coreShard, Team.sharded, 0);
                     firstCore = false;
@@ -101,22 +103,22 @@ public class Logic {
                 }
                 cores.add((CoreBlock.CoreBuild) tile.build);
             }
-            if (tile.floor() == (Floor) Blocks.metalFloor2) {
+            if (tile.floor() == (Floor) Blocks.metalFloor2) { // Shop Spawner
                 Shop shop = Shop.create(tile.x, tile.y);
                 shop.spawn();
                 shop.add(catalogs);
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel1) {
-                Spawner.spawners.add(new Spawner(Items.copper, tile.x, tile.y, (int) (60 * 2.5f)));
+            if (tile.floor() == (Floor) Blocks.darkPanel1) { // Copper Generator
+                Spawner.spawners.add(new Spawner(Items.copper, tile.x, tile.y, (int) (60 * 2f)));
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel5) {
+            if (tile.floor() == (Floor) Blocks.darkPanel5) { // Thorium Generator
                 Spawner.spawners.add(new Spawner(Items.thorium, tile.x, tile.y, 60 * 5));
             }
-            if (tile.floor() == (Floor) Blocks.darkPanel4) {
+            if (tile.floor() == (Floor) Blocks.darkPanel4) { // Plastinium Generator
                 Spawner.spawners.add(new Spawner(Items.plastanium, tile.x, tile.y, 60 * 10));
             }
         }
-        for (Spawner spawner : Spawner.spawners) {
+        for (Spawner spawner : Spawner.spawners) { // set nearest core for spawners | to disable and remove when core die
             CoreBlock.CoreBuild nearest = cores.get(0);
             for (CoreBlock.CoreBuild core : cores) {
                 if (core.dst(spawner.drawx, spawner.drawy) < nearest.dst(spawner.drawx, spawner.drawy)) {
@@ -125,10 +127,11 @@ public class Logic {
             }
             spawner.nearestCore = nearest;
         }
-        Timer.schedule(() -> {
+        Timer.schedule(() -> { // spawn core builders | haha poly go brrrrr
             for (CoreBlock.CoreBuild core : cores) {
                 UnitTypes.poly.spawn(core.team, core.x, core.y);
             }
+            loaded = true;
         }, 3);
     }
 
@@ -142,7 +145,7 @@ public class Logic {
                         if (player.resources.get(Items.graphite) <= 0) {
                             player.aviableToRemove = true;
                             player.owner.unit().kill();
-                        } else {
+                        } else { // if build resouce < 1 plauyer can't build conveyor => die
                             player.resources.add(Items.graphite, -1);
                             if (player.owner.unit() != null) {
                                 tile.setNet(Blocks.conveyor, player.owner.team(), (int) (player.owner.unit().rotation / 90f));
@@ -151,7 +154,7 @@ public class Logic {
                     }
                 }
             }
-            if (player.owner.unit() == null || player.owner.unit().spawnedByCore) {
+            if (player.owner.unit() == null || player.owner.unit().spawnedByCore) { // Spawn dagger when play try to spawn in core bruh
                 if (player.owner.team().core() != null) {
                     CoreBlock.CoreBuild c = player.owner.team().core();
                     Unit unit = UnitTypes.dagger.spawn(c.team, c.x, c.y + Vars.tilesize * 5);
@@ -160,8 +163,7 @@ public class Logic {
                 }
             }
             // --- TeleportUnitFix ---
-            if (player.oldUnit != player.owner.unit() && player.owner.core() != null) {
-                Log.info(player.owner.dst(player.oldUnit));
+            if (player.oldUnit != player.owner.unit() && player.owner.core() != null) { // that need when player select poly like a main unit, because oldUnit have NullController
                 if (player.owner.dst(player.pos) > Vars.tilesize * 15) {
                     player.resources.clear();
                     player.aviableToRemove = false;
@@ -171,7 +173,7 @@ public class Logic {
             }
             player.oldUnit = player.owner.unit();
             // --- ShieldLogic ---
-            if (player.owner.unit().shield != player.oldShieldValue) {
+            if (player.owner.unit().shield != player.oldShieldValue) { // Some Color Stuff :P
                 player.oldShieldValue = player.owner.unit().shield();
                 Call.effect(Fx.shieldApply, player.owner.x, player.owner.y, player.owner.y, Color.clear);
             }
@@ -230,8 +232,25 @@ public class Logic {
             // --- Player HUD ---
             StringBuilder hud = new StringBuilder();
 
+            hud.append("\n").append("[#").append(player.owner.team().color.toString()).append("]Team#").append(player.owner.team().id);
             hud.append(player.generateResources());
             Call.setHudText(player.owner.con, hud.toString());
+            // --- End Game ---
+            for (CoreBlock.CoreBuild core : cores) {
+                if (core.tile.build == null) cores.remove(core);
+            }
+            if (cores.size <= 1 && loaded) {
+                if (cores.size > 0) {
+                    CoreBlock.CoreBuild c = cores.get(0);
+                    Call.infoMessage("[#" + c.team.color.toString() + "]Team#" + c.team.id + " [accent]is Winner");
+                    Timer.schedule(() -> MainX.load(), 3);
+                    loaded = false;
+                } else {
+                    Call.infoMessage("[gray]Draw");
+                    Timer.schedule(() -> MainX.load(), 3);
+                    loaded = false;
+                }
+            }
         }
     }
 
@@ -286,11 +305,11 @@ public class Logic {
             new Catalog.Xitem("[gray]Knife []", (player) -> {
                 setWeaponForUnitData(player, UnitTypes.mace);
             }, new ItemStack(Items.thorium, 5), new ItemStack(Items.copper, 15)),
-            new Catalog.Xitem("[gray]Artilerry []", (player) -> {
-                setWeaponForUnitData(player, UnitTypes.fortress);
-            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 10)),
-            new Catalog.Xitem("[gray]Laser[]", (player) -> {
+            new Catalog.Xitem("[gray]Laser []", (player) -> {
                 setWeaponForUnitData(player, UnitTypes.quasar);
+            }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 10)),
+            new Catalog.Xitem("[gray]Artillery[]", (player) -> {
+                setWeaponForUnitData(player, UnitTypes.fortress);
             }, new ItemStack(Items.plastanium, 10)),}
         );
     }

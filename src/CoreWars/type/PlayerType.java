@@ -4,6 +4,7 @@ import CoreWars.game.Catalog;
 import CoreWars.logic.Icon;
 import arc.Events;
 import arc.struct.Seq;
+import mindustry.content.Items;
 import mindustry.game.EventType;
 import mindustry.gen.Nulls;
 import mindustry.gen.Player;

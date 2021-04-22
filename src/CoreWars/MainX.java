@@ -13,6 +13,7 @@ import mindustry.game.EventType;
 import mindustry.game.Gamemode;
 import mindustry.game.Rules;
 import mindustry.gen.Call;
+import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.mod.Plugin;
 import mindustry.world.Block;
@@ -41,7 +42,6 @@ public class MainX extends Plugin {
             rules.bannedBlocks.add(block);
         }
         rules.pvp = false;
-        rules.unitAmmo = true;
         rules.canGameOver = false;
         rules.waveTimer = false;
         rules.buildSpeedMultiplier = 0.5f;
@@ -63,11 +63,13 @@ public class MainX extends Plugin {
     
     public static void load() {
         Seq<Player> players = new Seq<>();
+        Groups.player.copy(players);
         
         Vars.logic.reset();
         Call.worldDataBegin();
         Vars.state.rules = rules.copy();
         Vars.world.loadMap(Vars.maps.getNextMap(Gamemode.pvp, Vars.state.map));
+        
         for (Player player : players) {
             Vars.netServer.sendWorldData(player);
         }

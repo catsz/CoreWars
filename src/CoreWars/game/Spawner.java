@@ -47,7 +47,7 @@ public class Spawner {
             }
             if (inRange(player.owner, 16)) {
                 for (ItemType item1 : items) {
-                    Call.transferItemEffect(item, drawx, drawy, player.owner.unit());
+                    Call.transferItemEffect(item, item1.getX(), item1.getY(), player.owner.unit());
                 }
                 player.resources.add(item, items.size);
                 items.clear();

@@ -79,7 +79,7 @@ public class UnitData {
                     BulletType bt = mount.weapon.bullet;
                     float x = unit.x + Angles.trnsx(unit.rotation, mount.weapon.x, mount.weapon.y),
                             y = unit.y + Angles.trnsy(unit.rotation, mount.weapon.x, mount.weapon.y);
-                    mount.weapon.bullet.createNet(unit.team, x, y, unit.rotation, bt.damage, bt.ammoMultiplier / bt.speed, bt.lifetime);
+                    mount.weapon.bullet.createNet(unit.team, x, y, unit.rotation, bt.damage, 1, bt.lifetime/ bt.range() * bt.speed);
                     if (hasFire) {
                         Call.effect(Fx.fire, x, y, unit.rotation, mount.weapon.heatColor);
                     }
