@@ -1,0 +1,6 @@
+name: "CoreWas",
+author: "Xusk",
+description: "Minecraft BedWars go brrrrr",
+version: 0.1
+main: "CoreWars.MainX",
+
