@@ -1,13 +1,15 @@
 package CoreWars.logic;
 
 import java.util.HashMap;
+
+import arc.struct.ObjectMap;
 import mindustry.content.Items;
 import mindustry.gen.Iconc;
 import mindustry.type.Item;
 
 public class Icon {
 
-    public static HashMap<Item, Character> icons = new HashMap<>();
+    public static ObjectMap<Item, Character> icons = new ObjectMap<>();
 
     public static void load() {
         /* Not for my brain xd
