@@ -133,7 +133,7 @@ public class Logic {
     }
 
     public void update() {
-        for (PlayerType player : PlayerType.players) {
+        for (PlayerType player : PlayerType.players.values()) {
             // --- Non Air Check ---
             if (player.owner.unit() != null) {
                 Tile tile = player.owner.unit().tileOn();

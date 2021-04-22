@@ -1,13 +1,8 @@
 package CoreWars.logic;
 
-import arc.Core;
-import arc.struct.ObjectMap;
-import arc.util.Log;
-import java.lang.reflect.Field;
 import java.util.HashMap;
-import mindustry.Vars;
+
 import mindustry.content.Items;
-import mindustry.ctype.ContentType;
 import mindustry.gen.Iconc;
 import mindustry.type.Item;
 

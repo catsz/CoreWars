@@ -31,7 +31,7 @@ public class MainX extends Plugin {
         UnitData.init();
         PlayerType.init();
         Icon.load();
-        
+
         logic = new Logic();
         logic.init();
         
@@ -58,7 +58,7 @@ public class MainX extends Plugin {
             Vars.netServer.openServer();
         });
         
-        Events.on(EventType.WorldLoadEvent.class, e -> {Vars.state.rules = rules.copy();});
+        Events.on(EventType.WorldLoadEvent.class, e -> Vars.state.rules = rules.copy());
     }
     
     public static void load() {
