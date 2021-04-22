@@ -6,7 +6,6 @@ import mindustry.gen.Iconc;
 import mindustry.type.Item;
 
 public class Icon {
-
     public static ObjectMap<Item, Character> icons = new ObjectMap<>();
 
     public static void load() {
