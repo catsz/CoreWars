@@ -8,6 +8,7 @@ import CoreWars.type.PlayerType;
 import CoreWars.type.UnitData;
 import arc.Events;
 import arc.graphics.Color;
+import arc.struct.IntMap;
 import arc.struct.Seq;
 import arc.util.Interval;
 import arc.util.Log;
@@ -40,23 +41,19 @@ public class Logic {
     boolean loaded = false;
     Interval interval;
     Catalog[] catalogs;
-    Seq<CoreBlock.CoreBuild> cores;
+    IntMap<CoreBlock.CoreBuild> cores;
 
     public void init() {
         catalogs = new Catalog[3];
         initCatalogs();
         interval = new Interval(1);
-        cores = new Seq<>();
+        cores = new IntMap<>();
         Events.on(EventType.WorldLoadEvent.class, event -> {
             onWorldLoad();
         });
-        Events.on(EventType.BlockDestroyEvent.class, event -> {
+        Events.on(EventType.BlockDestroyEvent.class, this::onBlockDestory);
 
-        });
-
-        Events.on(EventType.BlockBuildBeginEvent.class, event -> {
-            onBlockBuildBegin(event);
-        });
+        Events.on(EventType.BlockBuildBeginEvent.class, this::onBlockBuildBegin);
 
         //*sigh*
         Events.run(EventType.Trigger.update, () -> {
@@ -65,9 +62,10 @@ public class Logic {
     }
 
     public void onBlockDestory(EventType.BlockDestroyEvent event) {
-        if (cores.contains(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y))) {
-            Log.info(event.tile.x + " : " + event.tile.y);
-            CoreBlock.CoreBuild core = cores.find(c -> (c.tile.x == event.tile.x && c.tile.y == event.tile.y));
+        if (cores.containsKey(event.tile.pos())) {
+            //unneeded log slows down performance
+            //Log.debug(event.tile.x + " : " + event.tile.y);
+            CoreBlock.CoreBuild core = cores.get(event.tile.pos());
             core.team.data().units.forEach(u -> u.kill());
             core.kill();
         };
@@ -106,7 +104,7 @@ public class Logic {
                     tile.setNet(Blocks.coreShard, Team.get(currentTeam), 0);
                     currentTeam++;
                 }
-                cores.add((CoreBlock.CoreBuild) tile.build);
+                cores.put(tile.pos(), (CoreBlock.CoreBuild) tile.build);
             }
             if (tile.floor() == (Floor) Blocks.metalFloor2) { // Shop Spawner
                 Shop shop = Shop.create(tile.x, tile.y);
@@ -125,7 +123,7 @@ public class Logic {
         }
         for (Spawner spawner : Spawner.spawners) { // set nearest core for spawners | to disable and remove when core die
             CoreBlock.CoreBuild nearest = cores.get(0);
-            for (CoreBlock.CoreBuild core : cores) {
+            for (CoreBlock.CoreBuild core : cores.values()) {
                 if (core.dst(spawner.drawx, spawner.drawy) < nearest.dst(spawner.drawx, spawner.drawy)) {
                     nearest = core;
                 }
@@ -133,7 +131,7 @@ public class Logic {
             spawner.nearestCore = nearest;
         }
         Timer.schedule(() -> { // spawn core builders | haha poly go brrrrr
-            for (CoreBlock.CoreBuild core : cores) {
+            for (CoreBlock.CoreBuild core : cores.values()) {
                 UnitTypes.poly.spawn(core.team, core.x, core.y);
             }
             loaded = true;
@@ -252,9 +250,9 @@ public class Logic {
             hud.append(player.generateResources());
             Call.setHudText(player.owner.con, hud.toString());
             // --- End Game ---
-            for (CoreBlock.CoreBuild core : cores) {
+            for (CoreBlock.CoreBuild core : cores.values()) {
                 if (core.tile.build == null) {
-                    cores.remove(core);
+                    cores.remove(core.pos());
                 }
             }
             if (cores.size <= 1 && loaded) {
