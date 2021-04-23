@@ -58,6 +58,7 @@ public class Logic {
             onBlockBuildBegin(event);
         });
 
+        //*sigh*
         Events.run(EventType.Trigger.update, () -> {
             update();
         });
@@ -145,7 +146,7 @@ public class Logic {
         }
         shopTime -= Time.delta;
         Spawner.spawners.forEach(s -> s.spawnTime -= Time.delta);
-        for (PlayerType player : PlayerType.players) {
+        for (PlayerType player : PlayerType.players.values()) {
             // --- Non Air Check ---
             if (player.owner.unit() != null) {
                 Tile tile = player.owner.unit().tileOn();

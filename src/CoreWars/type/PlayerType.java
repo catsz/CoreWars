@@ -3,6 +3,7 @@ package CoreWars.type;
 import CoreWars.game.Catalog;
 import CoreWars.logic.Icon;
 import arc.Events;
+import arc.struct.IntMap;
 import arc.struct.Seq;
 import mindustry.content.Items;
 import mindustry.game.EventType;
@@ -14,7 +15,7 @@ import mindustry.type.ItemStack;
 
 public class PlayerType {
 
-    public static Seq<PlayerType> players = new Seq<>();
+    public static IntMap<PlayerType> players = new IntMap<>();
 
     public Player owner;
     public Resources resources;
@@ -26,17 +27,15 @@ public class PlayerType {
 
     public static void init() {
         Events.on(EventType.PlayerConnect.class, event -> {
-            players.add(new PlayerType(event.player));
+            players.put(event.player.id, new PlayerType(event.player));
         });
 
         Events.on(EventType.PlayerLeave.class, event -> {
-            players.remove(d -> d.owner.equals(event.player));
+            players.remove(event.player.id);
         });
     }
 
-    public static PlayerType get(Player player) {
-        return players.find(p -> p.owner == player);
-    }
+    public static PlayerType get(Player player) { return players.get(player.id); }
 
     public PlayerType(Player owner) {
         this.owner = owner;
@@ -45,7 +44,7 @@ public class PlayerType {
 
     public String generateResources() {
         StringBuilder sb = new StringBuilder();
-        for (ItemStack itemStack : resources.inventory.values()) {
+        for (ItemStack itemStack : resources.inventory) {
             sb.append("[white]").append(Icon.get(itemStack.item)).append(":").append("\t[#").append(itemStack.item.color.toString()).append("]").append(itemStack.amount).append(" ");
         }
         return sb.toString();
