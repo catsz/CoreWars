@@ -24,6 +24,7 @@ import mindustry.game.EventType;
 import mindustry.game.EventType.BlockBuildBeginEvent;
 import mindustry.game.Team;
 import mindustry.gen.Call;
+import mindustry.gen.Groups;
 import mindustry.gen.Unit;
 import mindustry.type.ItemStack;
 import mindustry.type.UnitType;
@@ -98,10 +99,10 @@ public class Logic {
             }
             if (tile.floor() == (Floor) Blocks.darkPanel6) { // Core Spawner
                 if (firstCore) {
-                    tile.setNet(Blocks.coreShard, Team.sharded, 0);
+                    tile.setBlock(Blocks.coreShard, Team.sharded, 0);
                     firstCore = false;
                 } else {
-                    tile.setNet(Blocks.coreShard, Team.get(currentTeam), 0);
+                    tile.setBlock(Blocks.coreShard, Team.get(currentTeam), 0);
                     currentTeam++;
                 }
                 cores.put(tile.pos(), (CoreBlock.CoreBuild) tile.build);
@@ -136,6 +137,9 @@ public class Logic {
             }
             loaded = true;
         }, 3);
+
+        Call.worldDataBegin();
+        Groups.player.each(Vars.netServer::sendWorldData);
     }
 
     public void update() {
