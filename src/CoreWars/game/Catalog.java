@@ -58,6 +58,7 @@ public class Catalog {
             for (ItemStack itemStack : cost) {
                 if (player.resources.get(itemStack.item) < itemStack.amount) {
                     canBuy = false;
+                    break;
                 }
             }
             return canBuy;
