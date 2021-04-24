@@ -30,13 +30,6 @@ public class MainX extends Plugin {
 
     @Override
     public void init() {
-        UnitData.init();
-        PlayerType.init();
-        Icon.load();
-
-        logic = new Logic();
-        logic.init();
-
         rules = new Rules();
         for (Block block : Vars.content.blocks()) {
             if (block == Blocks.copperWallLarge || block == Blocks.plastaniumWallLarge || block == Blocks.thoriumWallLarge) {
@@ -56,6 +49,14 @@ public class MainX extends Plugin {
         UnitTypes.poly.speed = 0;
         UnitTypes.poly.defaultController = UnitTypes.mega.defaultController;
         UnitTypes.poly.weapons.clear();
+
+        UnitData.init();
+        PlayerType.init();
+        Icon.load();
+
+        logic = new Logic();
+        logic.init();
+
         Events.on(EventType.ServerLoadEvent.class, event -> {
             load();
             Vars.netServer.openServer();
