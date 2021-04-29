@@ -24,6 +24,7 @@ import mindustry.game.EventType;
 import mindustry.game.EventType.BlockBuildBeginEvent;
 import mindustry.game.Team;
 import mindustry.gen.Call;
+import mindustry.gen.Groups;
 import mindustry.gen.Unit;
 import mindustry.type.ItemStack;
 import mindustry.type.UnitType;
@@ -98,10 +99,10 @@ public class Logic {
             }
             if (tile.floor() == (Floor) Blocks.darkPanel6) { // Core Spawner
                 if (firstCore) {
-                    tile.setNet(Blocks.coreShard, Team.sharded, 0);
+                    tile.setBlock(Blocks.coreShard, Team.sharded, 0);
                     firstCore = false;
                 } else {
-                    tile.setNet(Blocks.coreShard, Team.get(currentTeam), 0);
+                    tile.setBlock(Blocks.coreShard, Team.get(currentTeam), 0);
                     currentTeam++;
                 }
                 cores.put(tile.pos(), (CoreBlock.CoreBuild) tile.build);
@@ -136,6 +137,9 @@ public class Logic {
             }
             loaded = true;
         }, 3);
+
+        Call.worldDataBegin();
+        Groups.player.each(Vars.netServer::sendWorldData);
     }
 
     public void update() {
@@ -288,11 +292,11 @@ public class Logic {
                 player.owner.unit().health = player.owner.unit().maxHealth * 1.2f;
                 player.owner.unit().shield = 50f;
             }, new ItemStack(Items.copper, 10)),
-            new Catalog.Xitem("[lime]150[white] shiled ", (player) -> {
+            new Catalog.Xitem("[lime]150[white] shield ", (player) -> {
                 player.owner.unit().health = player.owner.unit().maxHealth * 1.7f;
                 player.owner.unit().shield = 150f;
             }, new ItemStack(Items.copper, 15), new ItemStack(Items.thorium, 7)),
-            new Catalog.Xitem("[lime]350[white] shiled", (player) -> {
+            new Catalog.Xitem("[lime]350[white] shield", (player) -> {
                 player.owner.unit().shield = 350f;
             }, new ItemStack(Items.plastanium, 5), new ItemStack(Items.thorium, 12)),
             new Catalog.Xitem("[red]1.7[white] maxhealth ", (player) -> {
@@ -312,12 +316,12 @@ public class Logic {
                     Call.transferItemTo(player.owner.unit(), Items.copper, 24, player.owner.x, player.owner.y, player.owner.core());
                 }
             }, new ItemStack(Items.copper, 10)),
-            new Catalog.Xitem("[#" + Items.thorium.color.toString() + "]Throium[]", (player) -> {
+            new Catalog.Xitem("[#" + Items.thorium.color.toString() + "]Thorium[]", (player) -> {
                 if (player.owner.core() != null) {
                     Call.transferItemTo(player.owner.unit(), Items.thorium, 24, player.owner.x, player.owner.y, player.owner.core());
                 }
             }, new ItemStack(Items.thorium, 8)),
-            new Catalog.Xitem("[#" + Items.plastanium.color.toString() + "]Plastinium[]", (player) -> {
+            new Catalog.Xitem("[#" + Items.plastanium.color.toString() + "]Plastanium[]", (player) -> {
                 if (player.owner.core() != null) {
                     Call.transferItemTo(player.owner.unit(), Items.plastanium, 48, player.owner.x, player.owner.y, player.owner.core());
                     Call.transferItemTo(player.owner.unit(), Items.metaglass, 16, player.owner.x, player.owner.y, player.owner.core());

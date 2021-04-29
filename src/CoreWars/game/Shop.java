@@ -39,13 +39,13 @@ public class Shop {
     }
 
     public void spawn() {
-        Vars.world.tiles.getn(x, y).setBlock(Blocks.plastaniumWall, Team.purple, 0);
-        Vars.world.tiles.getn(x - 2, y).setBlock(Blocks.plastaniumConveyor, Team.purple, 2);
-        Vars.world.tiles.getn(x + 2, y).setBlock(Blocks.plastaniumConveyor, Team.purple, 0);
-        Vars.world.tiles.getn(x, y - 2).setBlock(Blocks.plastaniumWall, Team.purple, 0);
-        Vars.world.tiles.getn(x, y - 4).setBlock(Blocks.plastaniumWall, Team.purple, 0);
-        Vars.world.tiles.getn(x, y - 6).setBlock(Blocks.plastaniumWall, Team.purple, 0);
-        Vars.world.tiles.getn(x, y - 8).setBlock(Blocks.plastaniumWall, Team.purple, 0);
+        Vars.world.tile(x, y).setBlock(Blocks.plastaniumWall, Team.purple, 0);
+        Vars.world.tile(x - 2, y).setBlock(Blocks.plastaniumConveyor, Team.purple, 2);
+        Vars.world.tile(x + 2, y).setBlock(Blocks.plastaniumConveyor, Team.purple, 0);
+        Vars.world.tile(x, y - 2).setBlock(Blocks.plastaniumWall, Team.purple, 0);
+        Vars.world.tile(x, y - 4).setBlock(Blocks.plastaniumWall, Team.purple, 0);
+        Vars.world.tile(x, y - 6).setBlock(Blocks.plastaniumWall, Team.purple, 0);
+        Vars.world.tile(x, y - 8).setBlock(Blocks.plastaniumWall, Team.purple, 0);
     }
 
     private Shop() {
